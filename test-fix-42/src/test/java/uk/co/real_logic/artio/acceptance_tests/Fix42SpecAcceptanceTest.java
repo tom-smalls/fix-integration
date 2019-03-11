@@ -11,18 +11,13 @@ import java.util.function.Supplier;
 @RunWith(Parameterized.class)
 public class Fix42SpecAcceptanceTest extends AbstractFixSpecAcceptanceTest
 {
-    private static final String QUICKFIX_4_2_ROOT_PATH = QUICKFIX_DEFINITIONS + "/fix42";
+    private static final String QUICKFIX_4_2_ROOT_PATH = QUICKFIX_SERVER_DEFINITIONS + "/fix42";
     private static final String CUSTOM_4_2_ROOT_PATH = CUSTOM_ROOT_PATH + "/fix42";
 
     /**
      * banned acceptance tests - not part of the spec we're aiming to support
      */
     private static final Set<String> BLACKLIST = new HashSet<>(Arrays.asList(
-        // TODO: ask for feedback on the following
-        // ignore if garbled, should we allow this, or just disconnect?
-        "2d_GarbledMessage.def",
-        "3c_GarbledMessage.def",
-
         "2r_UnregisteredMsgType.def", // how do we validate/configure this?
 
         "14i_RepeatingGroupCountNotEqual.def", // Is this required?
@@ -48,8 +43,10 @@ public class Fix42SpecAcceptanceTest extends AbstractFixSpecAcceptanceTest
         "14g_HeaderBodyTrailerFieldsOutOfOrder.def"
     ));
 
-    // Medium:
-    // "2m_BodyLengthValueNotCorrect.def" - length too short
+    private static final List<String> QUICKFIX_ACQUIRED_WHITELIST = Arrays.asList(
+        /*"3c_GarbledMessage.def",
+        "2d_GarbledMessage.def"*/
+        "2m_BodyLengthValueNotCorrect.def");
 
     private static final List<String> QUICKFIX_WHITELIST = Arrays.asList(
         "1a_ValidLogonWithCorrectMsgSeqNum.def",
@@ -109,6 +106,7 @@ public class Fix42SpecAcceptanceTest extends AbstractFixSpecAcceptanceTest
             final List<Object[]> tests = new ArrayList<>();
             tests.addAll(fix42Tests());
             tests.addAll(fix42CustomisedTests());
+            tests.addAll(fix42AcquiredTests());
             return tests;
         }
         catch (Exception e)
@@ -120,12 +118,20 @@ public class Fix42SpecAcceptanceTest extends AbstractFixSpecAcceptanceTest
 
     private static List<Object[]> fix42CustomisedTests()
     {
-        return testsFor(CUSTOM_4_2_ROOT_PATH, CUSTOM_WHITELIST, Environment::fix42);
+        return testsFor(CUSTOM_4_2_ROOT_PATH, CUSTOM_WHITELIST, () -> Environment.fix42(null, 0
+        ));
     }
 
     private static List<Object[]> fix42Tests()
     {
-        return testsFor(QUICKFIX_4_2_ROOT_PATH, QUICKFIX_WHITELIST, Environment::fix42);
+        return testsFor(QUICKFIX_4_2_ROOT_PATH, QUICKFIX_WHITELIST, () -> Environment.fix42(null, 0
+        ));
+    }
+
+    private static List<Object[]> fix42AcquiredTests()
+    {
+        return testsFor(QUICKFIX_4_2_ROOT_PATH, QUICKFIX_ACQUIRED_WHITELIST, () -> Environment.fix42(new NewOrderSingleClonerImpl(), 0
+        ));
     }
 
     public Fix42SpecAcceptanceTest(

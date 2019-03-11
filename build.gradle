@@ -68,7 +68,7 @@ subprojects {
         compile "uk.co.real-logic:artio-codecs:${fixVersion}"
 
         testCompile 'junit:junit:4.12'
-        testCompile 'org.mockito:mockito-core:2.23.4'
+        testCompile 'org.mockito:mockito-core:2.25.0'
         testCompile 'org.hamcrest:hamcrest-library:1.3'
         testCompile "org.quickfixj:quickfixj-messages-fix42:${quickfixVersion}"
         testCompile "org.quickfixj:quickfixj-messages-fix44:${quickfixVersion}"
@@ -141,16 +141,16 @@ project(':test-framework') {
     apply plugin: 'checkstyle'
 
     dependencies {
-        checkstyle 'com.puppycrawl.tools:checkstyle:8.16'
+        checkstyle 'com.puppycrawl.tools:checkstyle:8.18'
     }
 
     checkstyle {
-        toolVersion = "8.16"
+        toolVersion = "8.18"
     }
 
     task testJar(type: Jar, dependsOn: testClasses) {
-        classifier = 'tests'
-        baseName = "test-${project.archivesBaseName}"
+        archiveClassifier = 'tests'
+        archiveBaseName = "test-${project.archivesBaseName}"
         from sourceSets.test.output
     }
 
@@ -263,6 +263,6 @@ project(':test-fix-50') {
 }
 
 wrapper {
-    gradleVersion = '4.10.3'
+    gradleVersion = '5.2.1'
     distributionType = 'ALL'
 }

@@ -2,9 +2,6 @@ package uk.co.real_logic.artio.acceptance_tests;
 
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
-import uk.co.real_logic.artio.builder.LogonEncoder;
-import uk.co.real_logic.artio.builder.LogoutEncoder;
-import uk.co.real_logic.artio.session.SessionCustomisationStrategy;
 
 import java.nio.file.Path;
 import java.util.*;
@@ -13,7 +10,7 @@ import java.util.function.Supplier;
 @RunWith(Parameterized.class)
 public class Fix50SpecAcceptanceTest extends AbstractFixSpecAcceptanceTest
 {
-    private static final String QUICKFIX_5_0_ROOT_PATH = QUICKFIX_DEFINITIONS + "/fix50";
+    private static final String QUICKFIX_5_0_ROOT_PATH = QUICKFIX_SERVER_DEFINITIONS + "/fix50";
     private static final String CUSTOM_5_0_ROOT_PATH = CUSTOM_ROOT_PATH + "/fix50";
 
     /**
@@ -50,8 +47,8 @@ public class Fix50SpecAcceptanceTest extends AbstractFixSpecAcceptanceTest
         "14g_HeaderBodyTrailerFieldsOutOfOrder.def"
     ));
 
-    // Medium:
-    // "2m_BodyLengthValueNotCorrect.def" - length too short
+    private static final List<String> QUICKFIX_ACQUIRED_WHITELIST = Arrays.asList(
+        "2m_BodyLengthValueNotCorrect.def");
 
     private static final List<String> QUICKFIX_WHITELIST = Arrays.asList(
         "10_MsgSeqNumEqual.def",
@@ -111,37 +108,34 @@ public class Fix50SpecAcceptanceTest extends AbstractFixSpecAcceptanceTest
         final List<Object[]> tests = new ArrayList<>();
         tests.addAll(fix50Tests());
         tests.addAll(fix50CustomisedTests());
+        tests.addAll(fix50AcquiredTests());
         return tests;
     }
 
     private static List<Object[]> fix50CustomisedTests()
     {
         return testsFor(CUSTOM_5_0_ROOT_PATH, CUSTOM_WHITELIST,
-            () -> Environment.fix50(new Fix5SessionCustomizationStrategy()));
+            () -> Environment.fix50(new Fix50SessionCustomizationStrategy(), null, 0));
     }
 
     private static List<Object[]> fix50Tests()
     {
         return testsFor(QUICKFIX_5_0_ROOT_PATH, QUICKFIX_WHITELIST,
-            () -> Environment.fix50(new Fix5SessionCustomizationStrategy()));
+            () -> Environment.fix50(new Fix50SessionCustomizationStrategy(), null, 0));
+    }
+
+    private static List<Object[]> fix50AcquiredTests()
+    {
+        return testsFor(QUICKFIX_5_0_ROOT_PATH, QUICKFIX_ACQUIRED_WHITELIST, () -> Environment.fix50(
+            new Fix50SessionCustomizationStrategy(),
+            new NewOrderSingleClonerImpl(),
+            0));
     }
 
     public Fix50SpecAcceptanceTest(
         final Path path, final Path filename, final Supplier<Environment> environment)
     {
         super(path, filename, environment);
-    }
-
-    private static class Fix5SessionCustomizationStrategy implements SessionCustomisationStrategy {
-        @Override
-        public void configureLogon(LogonEncoder logon, long sessionId) {
-            logon.defaultApplVerID("7");
-        }
-
-        @Override
-        public void configureLogout(LogoutEncoder logout, long sessionId) {
-
-        }
     }
 
 }
